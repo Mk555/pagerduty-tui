@@ -1,0 +1,27 @@
+[package]
+name = "pagerduty-tui"
+descrition = "Minimalist PagerDuty TUI"
+repository = "https://github.com/Mk555/pagerduty-tui"
+readme = "README.md"
+license-file = "LICENSE"
+version = "0.1.0"
+edition = "2021"
+authors = ["Francois Duriez <duriezfr@gmail.com>"]
+
+[dependencies]
+# UI
+crossterm = "0.27.0"
+ratatui = "0.26.1"
+# Table tools
+itertools = "0.12"
+unicode-width = "0.1"
+# JSON
+serde = { version = "1.0.104", features = ["derive"] }
+serde_json = "1.0.113"
+serde_yaml = "=0.9.33"
+# HTTP
+reqwest = "=0.12.1"
+# Async
+tokio = { version = "1.36.0", features = ["full"] }
+# Utils
+homedir = "0.2.1"
