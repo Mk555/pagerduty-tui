@@ -99,10 +99,8 @@ impl PagerDuty {
   }
 
   pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
-    //let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&user_ids[]={}&limit=100",
-    //  PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, &self.current_user_id);
-    let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&limit=100",
-      PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT);
+    let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&user_ids[]={}&limit=100",
+      PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, &self.current_user_id);
 
     let client = Client::new();
     let response = client.get(&url_requets)
