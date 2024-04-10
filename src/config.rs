@@ -5,7 +5,8 @@ use homedir::get_my_home;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppConfig {
-  pagerduty_api_key: String
+  pagerduty_api_key: String,
+  refresh_rate: Option<i64>,
 }
 
 impl AppConfig {
@@ -20,10 +21,14 @@ impl AppConfig {
 
     Self {
       pagerduty_api_key: config.pagerduty_api_key,
+      refresh_rate: config.refresh_rate,
     }
   }
 
   pub fn get_pagerduty_api_key(&self) -> &str {
     &self.pagerduty_api_key
+  }
+  pub fn get_refresh_rate(&self) -> &Option<i64> {
+    &self.refresh_rate
   }
 }

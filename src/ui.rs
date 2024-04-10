@@ -8,7 +8,7 @@ use ratatui::{
 use crate::app::App;
 
 const INFO_TEXT: &str =
-  "(Esc) quit | (↑) move up | (↓) move down | (→) next color | (←) previous color";
+  "(Esc) quit | (↑) move up | (↓) move down | (R) Refresh | (Space) Aknowledge | (Enter) Open incident in browser";
 
 const SPLASH_TEXT: &str = " ____   __    ___  ____  ____    ____  _  _  ____  _  _ \n(  _ \\ / _\\  / __)(  __)(  _ \\  (    \\/ )( \\(_  _)( \\/ )\n ) __//    \\( (_ \\ ) _)  )   /   ) D () \\/ (  )(   )  / \n(__)  \\_/\\_/ \\___/(____)(__\\_)  (____/\\____/ (__) (__/  ";
 
@@ -32,7 +32,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
     .add_modifier(Modifier::REVERSED)
     .fg(app.colors.selected_style_fg);
 
-  let header = ["Name", "Address", "Email"]
+  let header = ["STATUS", "SERVICE - SUMMARY", "CREATED AT"]
     .into_iter()
     .map(Cell::from)
     .collect::<Row>()
@@ -131,5 +131,4 @@ pub fn splash_screen(f: &mut Frame) {
     .block(block);
   
   f.render_widget(splash_text, rects[0]);
-
 }

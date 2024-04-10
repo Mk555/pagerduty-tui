@@ -6,19 +6,40 @@ use serde::Deserialize;
 
 use crate::utils::split_str;
 
+const PAGERDUTY_URL: &str = "https://api.pagerduty.com";
+const PAGERDUTY_INCIDENTS_ENDPOINT:&str = "/incidents";
+const PAGERDUTY_USERS_ENDPOINT:&str = "/users";
+
 #[derive(Debug, Deserialize)]
-struct IncidentsPagerDuty{
-  incidents: Vec<IncidentPagerDuty>
+struct PagerDutyUserResult{
+  user: PagerDutyUser,
+}
+#[derive(Debug, Deserialize)]
+struct PagerDutyUser{
+  id: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct IncidentPagerDuty {
+struct PagerDutyService{
+  summary: String,
+}
+#[derive(Debug, Deserialize)]
+struct PagerDutyPriority {
+}
+
+#[derive(Debug, Deserialize)]
+struct PagerDutyIncidents{
+  incidents: Vec<PagerDutyIncident>
+}
+
+#[derive(Debug, Deserialize)]
+struct PagerDutyIncident {
   id: String,
   summary: String,
   created_at: String,
   status: String,
-  service: Service,
-  priority: Option<Priority>,
+  service: PagerDutyService,
+  priority: Option<PagerDutyPriority>,
 }
 
 pub struct Incident {
@@ -51,27 +72,20 @@ impl Incident {
 
 }
 
-#[derive(Debug, Deserialize)]
-struct Service {
-  summary: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct Priority {
-}
-
 pub struct PagerDuty {
   api_key: String,
+  current_user_id: String,
 }
 impl PagerDuty {
-  pub fn new(api_key: &str) -> Self{
+  pub async fn new(api_key: &str) -> Self{
     Self {
       api_key: String::from(api_key),
+      current_user_id: get_current_user_id(api_key).await.expect("Error getting current user id"),
     }
   }
 
   pub async fn acknowledge(&self, id: &str) -> Result<(), ()> {
-    let url_requet:String = format!("https://api.pagerduty.com/incidents/{}", id);
+    let url_requet:String = format!("{}{}/{}",PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, id);
 
     let client = Client::new();
     let _response = client.put(&url_requet)
@@ -85,7 +99,10 @@ impl PagerDuty {
   }
 
   pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
-    let url_requets:String = format!("https://api.pagerduty.com/incidents?statuses[]=triggered&limit=100");
+    //let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&user_ids[]={}&limit=100",
+    //  PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, &self.current_user_id);
+    let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&limit=100",
+      PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT);
 
     let client = Client::new();
     let response = client.get(&url_requets)
@@ -98,9 +115,9 @@ impl PagerDuty {
       let body_bytes = response.bytes().await.expect("Error while parsing PD response");
       let body = String::from_utf8_lossy(&body_bytes);
 
-      let incidents:IncidentsPagerDuty = serde_json::from_str(&body).expect("Error parsing result");
+      let incidents:PagerDutyIncidents = serde_json::from_str(&body).expect("Error parsing result");
 
-      let mut icindents_result: Vec<Incident> = Vec::new();
+      let mut incidents_result: Vec<Incident> = Vec::new();
       for mut incident in incidents.incidents {
         // Shorten summary to fit
         if incident.summary.len() > 100 {
@@ -114,7 +131,7 @@ impl PagerDuty {
         // Prepare the text to show
         incident.summary = format!("{}\n{}", incident.service.summary,incident.summary);
 
-        icindents_result.push(Incident {
+        incidents_result.push(Incident {
           id: incident.id,
           summary: incident.summary,
           status: incident.status,
@@ -122,14 +139,44 @@ impl PagerDuty {
         });
       }
 
-      Ok(icindents_result)
+      if incidents_result.len() == 0 {
+        let empty_incident: Incident = Incident {
+          id: String::from("---------"),
+          summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
+          status: String::from("---------"),
+          created_at: String::from("---------"),
+        };
+        incidents_result.push(empty_incident)
+      }
+      
+      incidents_result.reverse();
+      Ok(incidents_result)
     } else {
       eprint!("Error while sending request to PagerDuty : {:#?}", response);
 
       Err(String::from("Error while sending request"))
     }
-
-
   }
 
+}
+
+async fn get_current_user_id(api_key: &str) -> Result<String,String> {
+  let current_user_requets:String = format!("{}{}/me",PAGERDUTY_URL,PAGERDUTY_USERS_ENDPOINT);
+
+  let client = Client::new();
+  let response = client.get(&current_user_requets)
+    .header(CONTENT_TYPE, "application/json")
+    .header("Accept", "application/json")
+    .header("Authorization", format!("Token token={}", api_key))
+    .send().await.expect("Error sending the API request to PagerDuty");
+
+  if response.status().is_success() {
+    let body_bytes = response.bytes().await.expect("Error while parsing PD response");
+    let body = String::from_utf8_lossy(&body_bytes);
+
+    let current_user:PagerDutyUserResult = serde_json::from_str(&body).expect("Error parsing result");
+    Ok(current_user.user.id)
+  } else {
+    Err(response.status().to_string())
+  }
 }

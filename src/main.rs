@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let app_config:AppConfig = AppConfig::new();
 
   // Init PD
-  let pd: PagerDuty = PagerDuty::new(&app_config.get_pagerduty_api_key());
+  let pd: PagerDuty = PagerDuty::new(&app_config.get_pagerduty_api_key()).await;
 
   // setup terminal
   enable_raw_mode()?;
@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let _ = terminal.draw(|f,|splash_screen(f));
 
   // create app and run it
-  let app = App::new(pd).await;
+  let app = App::new(pd,&app_config).await;
   let res = run_app(&mut terminal, app).await;
 
   // restore terminal

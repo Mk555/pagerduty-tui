@@ -16,8 +16,6 @@ pub enum Action {
 
 // Tick rate
 pub const REFRESH_RATE:i64 = 250;
-// Update PD every x seconds
-pub const UPDATE_RATE:i64 = 60;
 
 pub async fn update(app: &mut App, msg: Action) -> Action {
   match msg {

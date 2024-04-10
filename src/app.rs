@@ -7,8 +7,9 @@ use tokio::sync::mpsc::{self, UnboundedSender,UnboundedReceiver};
 use unicode_width::UnicodeWidthStr;
 use style::palette::tailwind;
 
+use crate::config::AppConfig;
 use crate::pagerduty::{Incident, PagerDuty};
-use crate::actions::{Action,handle_event,update,REFRESH_RATE,UPDATE_RATE};
+use crate::actions::{Action,handle_event,update,REFRESH_RATE};
 use crate::ui::{ui,splash_screen};
 
 const ITEM_HEIGHT: usize = 4;
@@ -47,7 +48,7 @@ pub struct App {
   pub state: TableState,
   pub items: Vec<Incident>,
   pub pager_duty: PagerDuty,
-  pub longest_item_lens: (u16, u16, u16), // order is (name, address, email)
+  pub longest_item_lens: (u16, u16, u16), // order is (status,summary,created_at)
   pub scroll_state: ScrollbarState,
   pub colors: TableColors,
   pub color_index: usize,
@@ -55,11 +56,12 @@ pub struct App {
   pub action_rx: UnboundedReceiver<Action>,
   pub refreshing: bool,
   pub should_quit: bool,
+  pub refresh_rate: Option<i64>,
   pub ticker: i64,
 }
 
 impl App {
-  pub async fn new(pd: PagerDuty) -> Self {
+  pub async fn new(pd: PagerDuty, config: &AppConfig) -> Self {
 
     let data_vec = pd.get_incidents().await.expect("Error getting incidents from PagerDuty");
     let (action_tx, action_rx) = mpsc::unbounded_channel();
@@ -76,7 +78,8 @@ impl App {
       refreshing: false,
       action_tx,
       action_rx,
-      ticker: 0
+      refresh_rate: *config.get_refresh_rate(),
+      ticker: 0,
     }
   }
   pub fn next(&mut self) {
@@ -130,8 +133,8 @@ pub async fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io
       break;
     }
 
-    // REFRESH
-    if app.ticker >= UPDATE_RATE * ( 1000 / REFRESH_RATE) {
+    // REFRESH EVERY X SECOND
+    if app.ticker >= app.refresh_rate.unwrap_or(60) * ( 1000 / REFRESH_RATE) {
       app.refreshing = true;
       terminal.draw(|f| ui(f, &mut app))?;
 

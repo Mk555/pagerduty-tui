@@ -8,6 +8,21 @@ To install PagerDuty TUI, you can compile it using Cargo, the Rust package manag
 
 `cargo install pagerduty-tui`
 
+## Configuration
+
+PagerDuty TUI requires a configuration file located at `~/.config/pagerduty_tui.yaml`. This configuration file is used to store your PagerDuty API key, which is necessary for accessing PagerDuty incident data.
+
+### Create Pager Duty API Key
+
+![Create PagerDuty API Key](DOC/PagerDutyApiKey.png "PagerDutyApiKey")
+
+### Configuration File Format
+
+The configuration file should be in YAML format and contain the following key-value pair:
+`pagerduty_api_key: <PagerDuty API Key>`
+
+Replace `<PagerDuty API Key>` with your actual PagerDuty API key. This key is required for authenticating requests to the PagerDuty API and accessing incident data.
+
 ## Usage
 
 After installation, you can run PagerDuty TUI by executing the following command in your terminal:
