@@ -26,10 +26,18 @@ PagerDuty TUI requires a configuration file located at `~/.config/pagerduty_tui.
 
 ### Configuration File Format
 
-The configuration file should be in YAML format and contain the following key-value pair:
+The configuration file should be in YAML format and be stored in `~/.config/pagerduty_tui.yaml` 
+
+You need to put you PagerDuty API Key in this value :
+
 `pagerduty_api_key: <PagerDuty API Key>`
 
 Replace `<PagerDuty API Key>` with your actual PagerDuty API key. This key is required for authenticating requests to the PagerDuty API and accessing incident data.
+
+By default the refresh time is 30 seconds, but you can change it with the following configuration :
+`refresh_rate: <seconds>`
+
+Replace `<seconds>` by the number of seconds between 2 refresh.
 
 ## Usage
 
