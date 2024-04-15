@@ -84,18 +84,8 @@ impl PagerDuty {
     }
   }
 
-  pub async fn acknowledge(&self, id: &str) -> Result<(), ()> {
-    let url_requet:String = format!("{}{}/{}",PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, id);
-
-    let client = Client::new();
-    let _response = client.put(&url_requet)
-      .header(CONTENT_TYPE, "application/json")
-      .header("Accept", "application/json")
-      .header("Authorization", format!("Token token={}", &self.api_key))
-      .body("{\n  \"incident\": {\n    \"type\": \"incident_reference\",\n    \"status\": \"acknowledged\"\n  }\n}")
-      .send().await.expect("Error sending the API request to PagerDuty");
-
-    Ok(())
+  pub fn get_pagerduty_api_key(&self) -> &str {
+    &self.api_key
   }
 
   pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
@@ -177,4 +167,22 @@ async fn get_current_user_id(api_key: &str) -> Result<String,String> {
   } else {
     Err(response.status().to_string())
   }
+}
+
+pub async fn acknowledge_async(api_key: &str, id: &str) -> Result<(), ()> {
+  let url_requet:String = format!("{}{}/{}",PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, id);
+
+  let api_key_moved = String::from(api_key);
+
+  tokio::spawn(async move {
+    let client = Client::new();
+    let _response = client.put(&url_requet)
+      .header(CONTENT_TYPE, "application/json")
+      .header("Accept", "application/json")
+      .header("Authorization", format!("Token token={}", api_key_moved))
+      .body("{\n  \"incident\": {\n    \"type\": \"incident_reference\",\n    \"status\": \"acknowledged\"\n  }\n}")
+      .send().await.expect("Error sending the API request to PagerDuty");
+  });
+  
+  Ok(())
 }
