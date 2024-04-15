@@ -1,6 +1,7 @@
 use tokio::sync::mpsc;
 
 use crate::app::App;
+use crate::pagerduty::acknowledge_async;
 use crate::utils::open_in_browser;
 
 #[derive(PartialEq)]
@@ -35,7 +36,8 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
     },
     Action::Acknowledge => {
       let selected_id = app.state.selected().unwrap();
-      app.pager_duty.acknowledge(app.items[selected_id].id()).await.expect("Error aknoledging");
+      let selected_item:&str = app.items[selected_id].id();
+      acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), selected_item).await.expect("Error during aknowledge");
     },
     Action::Quit => app.should_quit = true, // You can handle cleanup and exit here
     _ => {},
@@ -54,7 +56,7 @@ pub fn handle_event(_app: &App, tx: mpsc::UnboundedSender<Action>) -> tokio::tas
             match key.code {
               crossterm::event::KeyCode::Char('j') | crossterm::event::KeyCode::Down => Action::Increment,
               crossterm::event::KeyCode::Char('k') | crossterm::event::KeyCode::Up => Action::Decrement,
-              crossterm::event::KeyCode::Char('u') | crossterm::event::KeyCode::F(5) => Action::UpdateIncidents,
+              crossterm::event::KeyCode::Char('r') | crossterm::event::KeyCode::F(5) => Action::UpdateIncidents,
               crossterm::event::KeyCode::Char('o') | crossterm::event::KeyCode::Enter => Action::Open,
               crossterm::event::KeyCode::Char('a') | crossterm::event::KeyCode::Char(' ') => Action::Acknowledge,
               crossterm::event::KeyCode::Char('q') | crossterm::event::KeyCode::Esc => Action::Quit,
