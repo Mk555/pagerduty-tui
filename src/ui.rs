@@ -1,14 +1,11 @@
 use ratatui::{
-  prelude::*, 
-  widgets::*,
-  widgets::block::title::*,
-  symbols::border,
+  prelude::*, symbols::border, widgets::{block::title::*, *}
 };
 
 use crate::app::App;
 
 const INFO_TEXT: &str =
-  "(Esc) quit | (↑) move up | (↓) move down | (R) Refresh | (Space) Aknowledge | (Enter) Open incident in browser";
+  "(Esc) Quit | (↑/↓) Navigate | (R) Refresh | (Space) Ack | (Enter) Open in browser";
 
 const SPLASH_TEXT: &str = " ____   __    ___  ____  ____    ____  _  _  ____  _  _ \n(  _ \\ / _\\  / __)(  __)(  _ \\  (    \\/ )( \\(_  _)( \\/ )\n ) __//    \\( (_ \\ ) _)  )   /   ) D () \\/ (  )(   )  / \n(__)  \\_/\\_/ \\___/(____)(__\\_)  (____/\\____/ (__) (__/  ";
 
@@ -38,17 +35,29 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
     .collect::<Row>()
     .style(header_style)
     .height(1);
+
+  // Creating rows for table
   let rows = app.items.iter().enumerate().map(|(i, data)| {
-    let color = match i % 2 {
-      0 => app.colors.normal_row_color,
-      _ => app.colors.alt_row_color,
-    };
+    let color:Color;
+
+    if *data.triggered(){
+      color = match i % 2 {
+        0 => app.colors.triggered_normal_color,
+        _ => app.colors.triggered_alt_color,
+      };
+    } else {
+      color = match i % 2 {
+        0 => app.colors.normal_row_color,
+        _ => app.colors.alt_row_color,
+      };
+    }
+
     let item = data.ref_array();
     item.into_iter()
-      .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
-      .collect::<Row>()
-      .style(Style::new().fg(app.colors.row_fg).bg(color))
-      .height(4)
+        .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
+        .collect::<Row>()
+        .style(Style::new().fg(app.colors.row_fg).bg(color))
+        .height(4)
   });
 
   let bar = " █ ";
@@ -98,7 +107,7 @@ fn render_scrollbar(f: &mut Frame, app: &mut App, area: Rect) {
 }
 
 pub fn render_footer(f: &mut Frame, app: &App, area: Rect) {
-  let mut footer_text: String = String::from("");
+  let footer_text: String;
   if app.refreshing {
     footer_text = String::from(" <- REFRESHING -> ");
   } else {

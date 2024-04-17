@@ -10,6 +10,8 @@ const PAGERDUTY_URL: &str = "https://api.pagerduty.com";
 const PAGERDUTY_INCIDENTS_ENDPOINT:&str = "/incidents";
 const PAGERDUTY_USERS_ENDPOINT:&str = "/users";
 
+pub const PAGER_DUTY_INCIDENT_URL: &str = "https://ooyalaflex.pagerduty.com/incidents/";
+
 #[derive(Debug, Deserialize)]
 struct PagerDutyUserResult{
   user: PagerDutyUser,
@@ -47,6 +49,7 @@ pub struct Incident {
   summary: String,
   status: String,
   created_at: String,
+  triggered: bool,
 }
 
 impl Incident {
@@ -70,6 +73,10 @@ impl Incident {
     &self.id
   }
 
+  pub fn triggered(&self) -> &bool {
+    &self.triggered
+  }
+
 }
 
 pub struct PagerDuty {
@@ -89,61 +96,72 @@ impl PagerDuty {
   }
 
   pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
-    let url_requets:String = format!("{}{}?statuses[]=triggered&statuses[]=acknowledged&user_ids[]={}&limit=100",
-      PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, &self.current_user_id);
+    let statuses: [&str; 2] = ["triggered","acknowledged"];
+    let mut pd_incidents: Vec<PagerDutyIncident> = Vec::new();
 
-    let client = Client::new();
-    let response = client.get(&url_requets)
-      .header(CONTENT_TYPE, "application/json")
-      .header("Accept", "application/json")
-      .header("Authorization", format!("Token token={}", &self.api_key))
-      .send().await.expect("Error sending the API request to PagerDuty");
+    for status in statuses {
+      let url_requets:String = format!("{}{}?statuses[]={}&user_ids[]={}&limit=100",
+        PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status, &self.current_user_id);
+      let client = Client::new();
+      let response = client.get(&url_requets)
+          .header(CONTENT_TYPE, "application/json")
+          .header("Accept", "application/json")
+          .header("Authorization", format!("Token token={}", &self.api_key))
+          .send().await.expect("Error sending the API request to PagerDuty");
+      if response.status().is_success() {
+        let body_bytes = response.bytes().await.expect("Error while parsing PD response");
+        let body = String::from_utf8_lossy(&body_bytes);
 
-    if response.status().is_success() {
-      let body_bytes = response.bytes().await.expect("Error while parsing PD response");
-      let body = String::from_utf8_lossy(&body_bytes);
-
-      let incidents:PagerDutyIncidents = serde_json::from_str(&body).expect("Error parsing result");
-
-      let mut incidents_result: Vec<Incident> = Vec::new();
-      for mut incident in incidents.incidents {
-        // Shorten summary to fit
-        if incident.summary.len() > 100 {
-          incident.summary = split_str(incident.summary, 100);
-        }
-        // Emergency
-        if incident.priority.is_some() {
-          incident.status = String::from("/!\\ P1 /!\\");
-        }
-
-        // Prepare the text to show
-        incident.summary = format!("{}\n{}", incident.service.summary,incident.summary);
-
-        incidents_result.push(Incident {
-          id: incident.id,
-          summary: incident.summary,
-          status: incident.status,
-          created_at: incident.created_at,
-        });
+        let mut pd_incidents_buf:PagerDutyIncidents = serde_json::from_str(&body).expect("Error parsing result");
+        pd_incidents_buf.incidents.reverse();
+        pd_incidents.append(&mut pd_incidents_buf.incidents);
       }
 
-      if incidents_result.len() == 0 {
-        let empty_incident: Incident = Incident {
-          id: String::from("---------"),
-          summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
-          status: String::from("---------"),
-          created_at: String::from("---------"),
-        };
-        incidents_result.push(empty_incident)
-      }
-      
-      incidents_result.reverse();
-      Ok(incidents_result)
-    } else {
-      eprint!("Error while sending request to PagerDuty : {:#?}", response);
-
-      Err(String::from("Error while sending request"))
     }
+
+    let mut incidents_result: Vec<Incident> = Vec::new();
+    for mut incident in pd_incidents {
+      // Shorten summary to fit
+      if incident.summary.len() > 100 {
+        incident.summary = split_str(incident.summary, 100);
+      }
+      // Emergency
+      if incident.priority.is_some() {
+        incident.status = String::from("/!\\ P1 /!\\");
+      }
+
+      let mut triggered: bool = false;
+      // Triggered
+      if incident.status == "triggered" {
+        triggered = true;
+      }
+
+      // Prepare the text to show
+      incident.summary = format!("{}\n{}", incident.service.summary,incident.summary);
+
+      incidents_result.push(Incident {
+        id: incident.id,
+        summary: incident.summary,
+        status: incident.status,
+        created_at: incident.created_at,
+        triggered: triggered,
+      });
+    }
+
+    if incidents_result.len() == 0 {
+      let empty_incident: Incident = Incident {
+        id: String::from("---------"),
+        summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
+        status: String::from("---------"),
+        created_at: String::from("---------"),
+        triggered: false,
+      };
+      incidents_result.push(empty_incident)
+    }
+    
+    //incidents_result.reverse();
+    Ok(incidents_result)
+    
   }
 
 }
