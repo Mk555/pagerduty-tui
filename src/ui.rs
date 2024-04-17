@@ -2,10 +2,10 @@ use ratatui::{
   prelude::*, symbols::border, widgets::{block::title::*, *}
 };
 
-use crate::app::App;
+use crate::{app::App, pagerduty::Incident};
 
 const INFO_TEXT: &str =
-  "(Esc) Quit | (↑/↓) Navigate | (R) Refresh | (Space) Ack | (Enter) Open in browser";
+  "(Esc) Quit | (↑/↓) Navigate | (R) Refresh | (Space) Ack | (H) Hide Ack | (Enter) Open in browser";
 
 const SPLASH_TEXT: &str = " ____   __    ___  ____  ____    ____  _  _  ____  _  _ \n(  _ \\ / _\\  / __)(  __)(  _ \\  (    \\/ )( \\(_  _)( \\/ )\n ) __//    \\( (_ \\ ) _)  )   /   ) D () \\/ (  )(   )  / \n(__)  \\_/\\_/ \\___/(____)(__\\_)  (____/\\____/ (__) (__/  ";
 
@@ -37,28 +37,47 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
     .height(1);
 
   // Creating rows for table
-  let rows = app.items.iter().enumerate().map(|(i, data)| {
-    let color:Color;
+  let mut rows: Vec<Row> = Vec::new();
+  for i in 0..app.items.len()-1 {
+    let item = app.items.get(i).unwrap();
+    // If item is ack and the ack are not hide
+    if (!!!*item.triggered() && !!!app.hide_ack ) || (*item.triggered()) {
+      let color:Color;
 
-    if *data.triggered(){
-      color = match i % 2 {
-        0 => app.colors.triggered_normal_color,
-        _ => app.colors.triggered_alt_color,
-      };
-    } else {
-      color = match i % 2 {
-        0 => app.colors.normal_row_color,
-        _ => app.colors.alt_row_color,
-      };
-    }
+      if *item.triggered(){
+        color = match i % 2 {
+          0 => app.colors.triggered_normal_color,
+          _ => app.colors.triggered_alt_color,
+        };
+      } else {
+        color = match i % 2 {
+          0 => app.colors.normal_row_color,
+          _ => app.colors.alt_row_color,
+        };
+      }
+      
+      rows.push(item.ref_array().into_iter()
+      .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
+      .collect::<Row>()
+      .style(Style::new().fg(app.colors.row_fg).bg(color))
+      .height(4));
+      }
+  }
 
-    let item = data.ref_array();
-    item.into_iter()
-        .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
-        .collect::<Row>()
-        .style(Style::new().fg(app.colors.row_fg).bg(color))
-        .height(4)
-  });
+  if rows.len() == 0 {
+    let empty_item: Incident = Incident {
+      id: String::from("---------"),
+      summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
+      status: String::from("---------"),
+      created_at: String::from("---------"),
+      triggered: false, 
+    };
+    rows.push(empty_item.ref_array().into_iter()
+      .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
+      .collect::<Row>()
+      .style(Style::new().fg(app.colors.row_fg).bg(app.colors.triggered_normal_color))
+      .height(4));
+  }
 
   let bar = " █ ";
   let title_str:String = format!(" - Pager Duty TUI - ");

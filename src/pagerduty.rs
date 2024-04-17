@@ -45,11 +45,11 @@ struct PagerDutyIncident {
 }
 
 pub struct Incident {
-  id: String,
-  summary: String,
-  status: String,
-  created_at: String,
-  triggered: bool,
+  pub id: String,
+  pub summary: String,
+  pub status: String,
+  pub created_at: String,
+  pub triggered: bool,
 }
 
 impl Incident {
