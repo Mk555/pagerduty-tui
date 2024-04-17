@@ -27,6 +27,8 @@ pub struct TableColors {
   pub normal_row_color: Color,
   pub alt_row_color: Color,
   pub footer_border_color: Color,
+  pub triggered_normal_color: Color,
+  pub triggered_alt_color: Color,
 }
 
 impl TableColors {
@@ -40,6 +42,8 @@ impl TableColors {
       normal_row_color: tailwind::SLATE.c950,
       alt_row_color: tailwind::SLATE.c900,
       footer_border_color: color.c400,
+      triggered_normal_color: tailwind::RED.c700,
+      triggered_alt_color: tailwind::RED.c500,
     }
   }
 }
