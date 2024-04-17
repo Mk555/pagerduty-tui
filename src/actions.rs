@@ -1,7 +1,7 @@
 use tokio::sync::mpsc;
 
 use crate::app::App;
-use crate::pagerduty::acknowledge_async;
+use crate::pagerduty::{acknowledge_async,PAGER_DUTY_INCIDENT_URL};
 use crate::utils::open_in_browser;
 
 #[derive(PartialEq)]
@@ -21,7 +21,9 @@ pub const REFRESH_RATE:i64 = 250;
 pub async fn update(app: &mut App, msg: Action) -> Action {
   match msg {
     Action::UpdateIncidents => {
+      app.refreshing = true;
       app.items = app.pager_duty.get_incidents().await.expect("Error while retreiving incidents");
+      app.refreshing = false;
     },
     Action::Increment => {
       app.next();
@@ -31,7 +33,7 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
     },
     Action::Open => {
       let selected_id = app.state.selected().unwrap();
-      let url = format!("https://ooyalaflex.pagerduty.com/incidents/{}", app.items[selected_id].id());
+      let url = format!("{}{}", PAGER_DUTY_INCIDENT_URL, app.items[selected_id].id());
       open_in_browser(&url);
     },
     Action::Acknowledge => {
