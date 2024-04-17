@@ -4,7 +4,9 @@ PagerDuty TUI is a minimalist terminal user interface developed in Rust for mana
 
 ## Installation
 
-To install PagerDuty TUI, you can compile it using Cargo.
+Download the last release on [Gihtub Releases](https://github.com/Mk555/pagerduty-tui/releases/latest)
+
+## Build
 
 To install Cargo, follow the steps here : 
 
