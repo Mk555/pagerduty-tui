@@ -11,6 +11,7 @@ pub enum Action {
   Decrement,
   Open,
   Acknowledge,
+  HideAck,
   Quit,
   None,
 }
@@ -41,6 +42,13 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
       let selected_item:&str = app.items[selected_id].id();
       acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), selected_item).await.expect("Error during aknowledge");
     },
+    Action::HideAck => {
+      if app.hide_ack {
+        app.hide_ack = false;
+      } else {
+        app.hide_ack = true;
+      }
+    },
     Action::Quit => app.should_quit = true, // You can handle cleanup and exit here
     _ => {},
   };
@@ -61,6 +69,7 @@ pub fn handle_event(_app: &App, tx: mpsc::UnboundedSender<Action>) -> tokio::tas
               crossterm::event::KeyCode::Char('r') | crossterm::event::KeyCode::F(5) => Action::UpdateIncidents,
               crossterm::event::KeyCode::Char('o') | crossterm::event::KeyCode::Enter => Action::Open,
               crossterm::event::KeyCode::Char('a') | crossterm::event::KeyCode::Char(' ') => Action::Acknowledge,
+              crossterm::event::KeyCode::Char('h') => Action::HideAck,
               crossterm::event::KeyCode::Char('q') | crossterm::event::KeyCode::Esc => Action::Quit,
 
               _ => Action::None,
