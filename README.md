@@ -53,6 +53,7 @@ After installation, you can run PagerDuty TUI by executing the following command
  - `r`: Update incident list
  - `Enter`: Open incident in default browser
  - `a`: Acknowledge incident
+ - `h`: Hide Acknowledged incidents
  - `q`: Quit PagerDuty TUI
 
 ### Contributions
