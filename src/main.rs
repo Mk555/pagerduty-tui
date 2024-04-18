@@ -26,9 +26,9 @@ use ui::splash_screen;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-  spawn_blocking(move ||
-    {update_bin().expect("Error while updating bin")}
-  ).await.expect("Error while updating");
+  //spawn_blocking(move ||
+  //  {update_bin().expect("Error while updating bin")}
+  //).await.expect("Error while updating");
 
   let app_config:AppConfig = AppConfig::new();
 

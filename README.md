@@ -2,6 +2,8 @@
 
 PagerDuty TUI is a minimalist terminal user interface developed in Rust for managing incidents in PagerDuty. It provides a simple interface to list triggered incidents, acknowledge them, and open them in your default browser.
 
+![Screenshot](DOC/pagerduty-tui-screenshot.png)
+
 ## Installation
 
 Download the last release on [Gihtub Releases](https://github.com/Mk555/pagerduty-tui/releases/latest)

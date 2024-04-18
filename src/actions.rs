@@ -41,6 +41,10 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
       let selected_id = app.state.selected().unwrap();
       let selected_item:&str = app.items[selected_id].id();
       acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), selected_item).await.expect("Error during aknowledge");
+      if app.items[selected_id].triggered {
+        app.items[selected_id].status = format!("{}\nSending Ack", app.items[selected_id].status);
+      }
+      app.items[selected_id].triggered = false;
     },
     Action::HideAck => {
       if app.hide_ack {
