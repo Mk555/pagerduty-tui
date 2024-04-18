@@ -25,3 +25,5 @@ reqwest = "=0.12.1"
 tokio = { version = "1.36.0", features = ["full"] }
 # Utils
 homedir = "0.2.1"
+# Self update
+self_update = "0.39.0"
