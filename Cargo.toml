@@ -4,7 +4,7 @@ descrition = "Minimalist PagerDuty TUI"
 repository = "https://github.com/Mk555/pagerduty-tui"
 readme = "README.md"
 license-file = "LICENSE"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["Francois Duriez <duriezfr@gmail.com>"]
 
@@ -25,3 +25,5 @@ reqwest = "=0.12.1"
 tokio = { version = "1.36.0", features = ["full"] }
 # Utils
 homedir = "0.2.1"
+# Self update
+self_update = "0.39.0"

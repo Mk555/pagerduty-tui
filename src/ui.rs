@@ -38,7 +38,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
 
   // Creating rows for table
   let mut rows: Vec<Row> = Vec::new();
-  for i in 0..app.items.len()-1 {
+  for i in 0..app.items.len() {
     let item = app.items.get(i).unwrap();
     // If item is ack and the ack are not hide
     if (!!!*item.triggered() && !!!app.hide_ack ) || (*item.triggered()) {
@@ -57,13 +57,12 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
       }
       
       rows.push(item.ref_array().into_iter()
-      .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
-      .collect::<Row>()
-      .style(Style::new().fg(app.colors.row_fg).bg(color))
-      .height(4));
-      }
+        .map(|content| Cell::from(Text::from(format!("\n{content}\n"))))
+        .collect::<Row>()
+        .style(Style::new().fg(app.colors.row_fg).bg(color))
+        .height(4));
+    }
   }
-
   if rows.len() == 0 {
     let empty_item: Incident = Incident {
       id: String::from("---------"),
@@ -83,7 +82,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
   let title_str:String = format!(" - Pager Duty TUI - ");
   let title = Title::from(title_str.bold());
   let t = Table::new(
-    rows,
+    rows.into_iter(),
     [
       // + 1 is for padding.
       Constraint::Length(app.longest_item_lens.0 + 1),
