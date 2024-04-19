@@ -1,6 +1,6 @@
 #![allow(clippy::enum_glob_use, clippy::wildcard_imports)]
 
-use std::{error::Error, io};
+use std::{error::Error, io, env};
 
 use ratatui::prelude::*;
 
@@ -26,9 +26,12 @@ use ui::splash_screen;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-  //spawn_blocking(move ||
-  //  {update_bin().expect("Error while updating bin")}
-  //).await.expect("Error while updating");
+  let args: Vec<String> = env::args().collect();
+  if args.len() == 2 && args[1] == "update" {
+    spawn_blocking(move ||
+      {update_bin().expect("Error while updating bin")}
+    ).await.expect("Error while updating");
+  }
 
   let app_config:AppConfig = AppConfig::new();
 
