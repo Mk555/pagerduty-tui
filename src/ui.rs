@@ -97,7 +97,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
       .title(title.alignment(Alignment::Center))
       .borders(Borders::ALL)
       .border_style(Style::new().fg(app.colors.footer_border_color))
-      .border_type(BorderType::Double),
+      .border_type(BorderType::Rounded),
   )
   .highlight_symbol(Text::from(vec![
     "".into(),
@@ -148,8 +148,9 @@ pub fn render_footer(f: &mut Frame, app: &App, area: Rect) {
       Block::default()
         .borders(border)
         .border_style(Style::new().fg(app.colors.footer_border_color))
-        .border_type(BorderType::Double)
-        .padding(padding),
+        .border_type(BorderType::Rounded)
+        .padding(padding)
+        .bold(),
     );
   f.render_widget(info_footer, area);
 }
