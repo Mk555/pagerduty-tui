@@ -1,7 +1,7 @@
 use tokio::sync::mpsc;
 
 use crate::app::App;
-use crate::pagerduty::{acknowledge_async,PAGER_DUTY_INCIDENT_URL};
+use crate::pagerduty::{acknowledge_async, get_items_async, PAGER_DUTY_INCIDENT_URL};
 use crate::utils::open_in_browser;
 
 #[derive(PartialEq)]
@@ -23,8 +23,9 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
   match msg {
     Action::UpdateIncidents => {
       app.refreshing = true;
-      app.items = app.pager_duty.get_incidents().await.expect("Error while retreiving incidents");
-      app.refreshing = false;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
+      //app.items = app.pager_duty.get_incidents().await.expect("Error while retreiving incidents");
+      //app.refreshing = false;
     },
     Action::Increment => {
       app.next();

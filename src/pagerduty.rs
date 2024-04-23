@@ -1,6 +1,8 @@
 use reqwest::Client;
 use reqwest::header::CONTENT_TYPE;
 
+use tokio::sync::mpsc;
+
 use serde_json;
 use serde::Deserialize;
 
@@ -202,5 +204,24 @@ pub async fn acknowledge_async(api_key: &str, id: &str) -> Result<(), ()> {
       .send().await.expect("Error sending the API request to PagerDuty");
   });
   
+  Ok(())
+}
+
+pub async fn get_items_async(api_key: &str, tx: mpsc::UnboundedSender<Vec<Incident>>) -> Result<(), ()> {
+  let pd_api_key = String::from(api_key);
+
+  tokio::spawn(async move {
+    let pd = PagerDuty::new(&pd_api_key).await;
+    let items_res = pd.get_incidents().await;
+    match items_res {
+      Ok(items) => {
+        tx.send(items)
+      }
+      Err(_) => {
+        tx.send(Vec::new())
+      }
+    }
+  });
+
   Ok(())
 }
