@@ -126,20 +126,30 @@ fn render_scrollbar(f: &mut Frame, app: &mut App, area: Rect) {
 
 pub fn render_footer(f: &mut Frame, app: &App, area: Rect) {
   let footer_text: String;
+  let color_bg: Color;
+  let border: Borders;
+  let padding: Padding;
   if app.refreshing {
+    border = Borders::NONE;
     footer_text = String::from(" <- REFRESHING -> ");
+    color_bg = Color::Yellow;
+    padding = Padding::new(0, 0, 1, 0);
   } else {
+    border = Borders::ALL;
     footer_text = String::from(INFO_TEXT);
+    color_bg = app.colors.buffer_bg;
+    padding = Padding::new(0, 0, 0, 0);
   }
 
   let info_footer = Paragraph::new(Line::from(footer_text))
-    .style(Style::new().fg(app.colors.row_fg).bg(app.colors.buffer_bg))
+    .style(Style::new().fg(app.colors.row_fg).bg(color_bg))
     .centered()
     .block(
       Block::default()
-        .borders(Borders::ALL)
+        .borders(border)
         .border_style(Style::new().fg(app.colors.footer_border_color))
-        .border_type(BorderType::Double),
+        .border_type(BorderType::Double)
+        .padding(padding),
     );
   f.render_widget(info_footer, area);
 }
