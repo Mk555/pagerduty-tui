@@ -8,7 +8,7 @@ use unicode_width::UnicodeWidthStr;
 use style::palette::tailwind;
 
 use crate::config::AppConfig;
-use crate::pagerduty::{Incident, PagerDuty};
+use crate::pagerduty::{Incident, PagerDuty, get_items_async};
 use crate::actions::{Action,handle_event,update,REFRESH_RATE};
 use crate::ui::{ui,splash_screen};
 
@@ -143,27 +143,23 @@ pub async fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io
     if app.should_quit {
       break;
     }
-    if let items_res = app.items_rx.try_recv() {
-      match items_res {
-        Ok(items) => {
-          app.items = items;
-          app.refreshing = false;
-        }
-        Err(_) => {}
+    
+    let items_res = app.items_rx.try_recv();
+    match items_res {
+      Ok(items) => {
+        app.items = items;
+        app.refreshing = false;
       }
+      Err(_) => {}
     }
 
     // REFRESH EVERY X SECOND
     if app.ticker >= app.refresh_rate.unwrap_or(60) * ( 1000 / REFRESH_RATE) {
       app.refreshing = true;
-      terminal.draw(|f| ui(f, &mut app))?;
 
-      app.items = app.pager_duty.get_incidents().await.unwrap();
-      
       app.ticker = 0;
 
-      app.refreshing = false;
-      terminal.draw(|f| ui(f, &mut app))?;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
     } else {
       app.ticker += 1;
     }
