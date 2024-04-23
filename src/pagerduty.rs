@@ -102,10 +102,8 @@ impl PagerDuty {
     let mut pd_incidents: Vec<PagerDutyIncident> = Vec::new();
 
     for status in statuses {
-      //let url_requets:String = format!("{}{}?statuses[]={}&user_ids[]={}&limit=100",
-      //  PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status, &self.current_user_id);
-      let url_requets:String = format!("{}{}?statuses[]={}&limit=100",
-        PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status);
+      let url_requets:String = format!("{}{}?statuses[]={}&user_ids[]={}&limit=100",
+        PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status, &self.current_user_id);
       let client = Client::new();
       let response = client.get(&url_requets)
           .header(CONTENT_TYPE, "application/json")
