@@ -5,7 +5,7 @@ use ratatui::{
 use crate::{app::App, pagerduty::Incident};
 
 const INFO_TEXT: &str =
-  "(Esc) Quit | (↑/↓) Navigate | (R) Refresh | (Space) Ack | (H) Hide Ack | (Enter) Open in browser";
+  "(Esc) Quit | (↑/↓/🏠) Navigate | (R) Refresh | (Space) Ack | (H) Hide Ack | (Enter) Open in browser";
 
 const SPLASH_TEXT: &str = " ____   __    ___  ____  ____    ____  _  _  ____  _  _ \n(  _ \\ / _\\  / __)(  __)(  _ \\  (    \\/ )( \\(_  _)( \\/ )\n ) __//    \\( (_ \\ ) _)  )   /   ) D () \\/ (  )(   )  / \n(__)  \\_/\\_/ \\___/(____)(__\\_)  (____/\\____/ (__) (__/  ";
 

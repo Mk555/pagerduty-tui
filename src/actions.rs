@@ -9,6 +9,7 @@ pub enum Action {
   UpdateIncidents,
   Increment,
   Decrement,
+  Top,
   Open,
   Acknowledge,
   HideAck,
@@ -33,6 +34,9 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
     Action::Decrement => {
       app.previous();
     },
+    Action::Top => {
+      app.top();
+    }
     Action::Open => {
       let selected_id = app.state.selected().unwrap();
       let url = format!("{}{}", PAGER_DUTY_INCIDENT_URL, app.items[selected_id].id());
@@ -71,6 +75,7 @@ pub fn handle_event(_app: &App, tx: mpsc::UnboundedSender<Action>) -> tokio::tas
             match key.code {
               crossterm::event::KeyCode::Char('j') | crossterm::event::KeyCode::Down => Action::Increment,
               crossterm::event::KeyCode::Char('k') | crossterm::event::KeyCode::Up => Action::Decrement,
+              crossterm::event::KeyCode::Home => Action::Top,
               crossterm::event::KeyCode::Char('r') | crossterm::event::KeyCode::F(5) => Action::UpdateIncidents,
               crossterm::event::KeyCode::Char('o') | crossterm::event::KeyCode::Enter => Action::Open,
               crossterm::event::KeyCode::Char('a') | crossterm::event::KeyCode::Char(' ') => Action::Acknowledge,
