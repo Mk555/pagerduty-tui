@@ -123,6 +123,10 @@ impl App {
     self.scroll_state = self.scroll_state.position(i * ITEM_HEIGHT);
   }
 
+  pub fn top(&mut self) {
+    self.state.select(Some(0));
+  }
+
   pub fn set_colors(&mut self) {
     self.colors = TableColors::new(&PALETTES[self.color_index]);
   }
