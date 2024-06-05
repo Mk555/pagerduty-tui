@@ -1,6 +1,6 @@
 #![allow(clippy::enum_glob_use, clippy::wildcard_imports)]
 
-use std::{error::Error, io, env};
+use std::{env, error::Error, io};
 
 use ratatui::prelude::*;
 
