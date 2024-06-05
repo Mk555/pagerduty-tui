@@ -41,9 +41,13 @@ The configuration file should be in YAML format and be stored in `~/.config/page
 
 You need to put you PagerDuty API Key in this value :
 
-`pagerduty_api_key: <PagerDuty API Key>`
+```yaml
+pagerduty_api_key: <PagerDuty API Key>
+pagerduty_domain: <PagerDuty Organization>
+```
 
 Replace `<PagerDuty API Key>` with your actual PagerDuty API key. This key is required for authenticating requests to the PagerDuty API and accessing incident data.
+Replace `<PagerDuty Organization>` with the name of your organization
 
 By default the refresh time is 30 seconds, but you can change it with the following configuration :
 `refresh_rate: <seconds>`
