@@ -12,7 +12,7 @@ const PAGERDUTY_URL: &str = "https://api.pagerduty.com";
 const PAGERDUTY_INCIDENTS_ENDPOINT:&str = "/incidents";
 const PAGERDUTY_USERS_ENDPOINT:&str = "/users";
 
-pub const PAGER_DUTY_INCIDENT_URL: &str = "https://ooyalaflex.pagerduty.com/incidents/";
+pub const PAGER_DUTY_INCIDENT_URL: &str = ".pagerduty.com/incidents/";
 
 #[derive(Debug, Deserialize)]
 struct PagerDutyUserResult{
@@ -84,10 +84,12 @@ impl Incident {
 pub struct PagerDuty {
   api_key: String,
   current_user_id: String,
+  domain: String,
 }
 impl PagerDuty {
-  pub async fn new(api_key: &str) -> Self{
+  pub async fn new(domain: &str, api_key: &str) -> Self{
     Self {
+      domain: String::from(domain),
       api_key: String::from(api_key),
       current_user_id: get_current_user_id(api_key).await.expect("Error getting current user id"),
     }
@@ -95,6 +97,9 @@ impl PagerDuty {
 
   pub fn get_pagerduty_api_key(&self) -> &str {
     &self.api_key
+  }
+  pub fn get_pagerduty_domain(&self) -> &str {
+    &self.domain
   }
 
   pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
@@ -207,11 +212,12 @@ pub async fn acknowledge_async(api_key: &str, id: &str) -> Result<(), ()> {
   Ok(())
 }
 
-pub async fn get_items_async(api_key: &str, tx: mpsc::UnboundedSender<Vec<Incident>>) -> Result<(), ()> {
+pub async fn get_items_async(domain: &str, api_key: &str, tx: mpsc::UnboundedSender<Vec<Incident>>) -> Result<(), ()> {
   let pd_api_key = String::from(api_key);
+  let pd_domain = String::from(domain);
 
   tokio::spawn(async move {
-    let pd = PagerDuty::new(&pd_api_key).await;
+    let pd = PagerDuty::new(&pd_domain, &pd_api_key).await;
     let items_res = pd.get_incidents().await;
     match items_res {
       Ok(items) => {

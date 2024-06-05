@@ -5,6 +5,7 @@ use homedir::get_my_home;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppConfig {
+  pagerduty_domain: String,
   pagerduty_api_key: String,
   refresh_rate: Option<i64>,
 }
@@ -20,6 +21,7 @@ impl AppConfig {
       .expect("Error while parsing YAML config");
 
     Self {
+      pagerduty_domain: config.pagerduty_domain,
       pagerduty_api_key: config.pagerduty_api_key,
       refresh_rate: config.refresh_rate,
     }
@@ -27,6 +29,9 @@ impl AppConfig {
 
   pub fn get_pagerduty_api_key(&self) -> &str {
     &self.pagerduty_api_key
+  }
+  pub fn get_pagerduty_domain(&self) -> &str {
+    &self.pagerduty_domain
   }
   pub fn get_refresh_rate(&self) -> &Option<i64> {
     &self.refresh_rate
