@@ -163,7 +163,7 @@ pub async fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io
 
       app.ticker = 0;
 
-      let _res = get_items_async(app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
     } else {
       app.ticker += 1;
     }

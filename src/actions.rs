@@ -24,9 +24,7 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
   match msg {
     Action::UpdateIncidents => {
       app.refreshing = true;
-      let _res = get_items_async(app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
-      //app.items = app.pager_duty.get_incidents().await.expect("Error while retreiving incidents");
-      //app.refreshing = false;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
     },
     Action::Increment => {
       app.next();
@@ -39,7 +37,7 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
     }
     Action::Open => {
       let selected_id = app.state.selected().unwrap();
-      let url = format!("{}{}", PAGER_DUTY_INCIDENT_URL, app.items[selected_id].id());
+      let url = format!("https://{}{}{}", app.pager_duty.get_pagerduty_domain(), PAGER_DUTY_INCIDENT_URL, app.items[selected_id].id());
       open_in_browser(&url);
     },
     Action::Acknowledge => {

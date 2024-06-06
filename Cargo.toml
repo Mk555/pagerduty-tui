@@ -4,7 +4,7 @@ descrition = "Minimalist PagerDuty TUI"
 repository = "https://github.com/Mk555/pagerduty-tui"
 readme = "README.md"
 license-file = "LICENSE"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 authors = ["Francois Duriez <duriezfr@gmail.com>"]
 

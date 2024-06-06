@@ -1,4 +1,5 @@
 use std::process::Command;
+use  std::env;
 
 pub fn split_str(text:String, lenght:u16) -> String{
   let mut result:String = String::from("");
@@ -12,7 +13,17 @@ pub fn split_str(text:String, lenght:u16) -> String{
 }
 
 pub fn open_in_browser(url:&str){
-  let _ = Command::new("/usr/bin/xdg-open")
-    .arg(url)
-    .output();
+  let os = env::consts::OS;
+  
+  if os == "linux" {
+    let _ = Command::new("/usr/bin/xdg-open")
+      .arg(url)
+      .output();
+  } else if os == "macos" {
+    let _ = Command::new("/usr/bin/open")
+      .arg(url)
+      .output();
+  } else {
+    ()
+  }
 }

@@ -1,6 +1,6 @@
 #![allow(clippy::enum_glob_use, clippy::wildcard_imports)]
 
-use std::{error::Error, io, env};
+use std::{env, error::Error, io};
 
 use ratatui::prelude::*;
 
@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let app_config:AppConfig = AppConfig::new();
 
   // Init PD
-  let pd: PagerDuty = PagerDuty::new(&app_config.get_pagerduty_api_key()).await;
+  let pd: PagerDuty = PagerDuty::new(app_config.get_pagerduty_domain(),&app_config.get_pagerduty_api_key()).await;
 
   // setup terminal
   enable_raw_mode()?;
