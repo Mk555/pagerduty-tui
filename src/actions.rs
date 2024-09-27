@@ -12,6 +12,7 @@ pub enum Action {
   Top,
   Open,
   Acknowledge,
+  AcknowledgeAllService,
   HideAck,
   Quit,
   None,
@@ -43,11 +44,22 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
     Action::Acknowledge => {
       let selected_id = app.state.selected().unwrap();
       let selected_item:&str = app.items[selected_id].id();
-      acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), selected_item).await.expect("Error during aknowledge");
       if app.items[selected_id].triggered {
+        acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), selected_item).await.expect("Error during aknowledge");
         app.items[selected_id].status = format!("{}\nSending Ack", app.items[selected_id].status);
+        app.items[selected_id].triggered = false;
       }
-      app.items[selected_id].triggered = false;
+    },
+    Action::AcknowledgeAllService => {
+      // Loop on all incidents
+      for i in 0..app.items.len() {
+        if app.items[i].service == app.items[app.state.selected().unwrap()].service && app.items[i].triggered {
+          let item_to_ack: &str = &format!("{}", i);
+          acknowledge_async(&app.pager_duty.get_pagerduty_api_key(), item_to_ack).await.expect("Error during aknowledge");
+          app.items[i].status = format!("{}\nSending Ack", app.items[i].status);
+          app.items[i].triggered = false;
+        }
+      }
     },
     Action::HideAck => {
       if app.hide_ack {
@@ -77,6 +89,7 @@ pub fn handle_event(_app: &App, tx: mpsc::UnboundedSender<Action>) -> tokio::tas
               crossterm::event::KeyCode::Char('r') | crossterm::event::KeyCode::F(5) => Action::UpdateIncidents,
               crossterm::event::KeyCode::Char('o') | crossterm::event::KeyCode::Enter => Action::Open,
               crossterm::event::KeyCode::Char('a') | crossterm::event::KeyCode::Char(' ') => Action::Acknowledge,
+              crossterm::event::KeyCode::Char('t') => Action::AcknowledgeAllService,
               crossterm::event::KeyCode::Char('h') => Action::HideAck,
               crossterm::event::KeyCode::Char('q') | crossterm::event::KeyCode::Esc => Action::Quit,
 

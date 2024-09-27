@@ -68,6 +68,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
       id: String::from("---------"),
       summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
       status: String::from("---------"),
+      service: String::from(""),
       created_at: String::from("---------"),
       triggered: false, 
     };

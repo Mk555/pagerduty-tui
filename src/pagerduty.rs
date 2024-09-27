@@ -49,6 +49,7 @@ struct PagerDutyIncident {
 pub struct Incident {
   pub id: String,
   pub summary: String,
+  pub service: String,
   pub status: String,
   pub created_at: String,
   pub triggered: bool,
@@ -143,12 +144,14 @@ impl PagerDuty {
         triggered = true;
       }
 
+      incident.service.summary = format!("{}", incident.service.summary);
       // Prepare the text to show
       incident.summary = format!("{}\n{}", incident.service.summary,incident.summary);
 
       incidents_result.push(Incident {
         id: incident.id,
         summary: incident.summary,
+        service: incident.service.summary,
         status: incident.status,
         created_at: incident.created_at,
         triggered: triggered,
@@ -159,6 +162,7 @@ impl PagerDuty {
       let empty_incident: Incident = Incident {
         id: String::from("---------"),
         summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
+        service: String::from(""),
         status: String::from("---------"),
         created_at: String::from("---------"),
         triggered: false,
