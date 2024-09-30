@@ -5,7 +5,7 @@ use ratatui::{
 use crate::{app::App, pagerduty::Incident};
 
 const INFO_TEXT: &str =
-  "(Esc) Quit | (↑/↓/🏠) Navigate | (R) Refresh | (Space) Ack | (H) Hide Ack | (Enter) Open in browser";
+  "(Esc) Quit | (↑/↓/🏠) Navigate | (R) Refresh | (Space) Ack | (A) Ack all service | (H) Hide Ack | (Enter) Open in browser";
 
 const SPLASH_TEXT: &str = " ____   __    ___  ____  ____    ____  _  _  ____  _  _ \n(  _ \\ / _\\  / __)(  __)(  _ \\  (    \\/ )( \\(_  _)( \\/ )\n ) __//    \\( (_ \\ ) _)  )   /   ) D () \\/ (  )(   )  / \n(__)  \\_/\\_/ \\___/(____)(__\\_)  (____/\\____/ (__) (__/  ";
 
@@ -68,6 +68,7 @@ pub fn render_table(f: &mut Frame, app: &mut App, area: Rect) {
       id: String::from("---------"),
       summary: String::from(" - NO INCIDENTS | TIME FOR A BREAK - "),
       status: String::from("---------"),
+      service: String::from(""),
       created_at: String::from("---------"),
       triggered: false, 
     };
