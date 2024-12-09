@@ -62,6 +62,7 @@ pub struct App {
   pub items_rx: UnboundedReceiver<Vec<Incident>>,
   pub refreshing: bool,
   pub hide_ack: bool,
+  pub all_incidents: bool,
   pub should_quit: bool,
   pub refresh_rate: Option<i64>,
   pub ticker: i64,
@@ -70,7 +71,7 @@ pub struct App {
 impl App {
   pub async fn new(pd: PagerDuty, config: &AppConfig) -> Self {
 
-    let data_vec = pd.get_incidents().await.expect("Error getting incidents from PagerDuty");
+    let data_vec = pd.get_incidents(false).await.expect("Error getting incidents from PagerDuty");
     let (action_tx, action_rx) = mpsc::unbounded_channel();
     let (items_tx, items_rx) = mpsc::unbounded_channel();
 
@@ -85,6 +86,7 @@ impl App {
       should_quit: false,
       refreshing: false,
       hide_ack: false,
+      all_incidents: false,
       action_tx,
       action_rx,
       items_tx,
@@ -163,7 +165,7 @@ pub async fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io
 
       app.ticker = 0;
 
-      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.all_incidents, app.items_tx.clone()).await;
     } else {
       app.ticker += 1;
     }

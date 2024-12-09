@@ -8,6 +8,17 @@ PagerDuty TUI is a minimalist terminal user interface developed in Rust for mana
 
 Download the last release on [Gihtub Releases](https://github.com/Mk555/pagerduty-tui/releases/latest)
 
+## Shortcuts
+
+Here are the options in the app : 
+- `Q/<Esc>` : Quit
+- `<Up>/<Down>/<Home>` : Move in the list of incidents
+- `R` : Refresh the list of incidents
+- `<Space>` : Acknowledge incident
+- `A` : Acknowledge all the incidents in the service
+- `G` : Trigger the switch to show incidents assigned to everyone, not only the current user
+- `<Enter>` : Open the incident in the default browser
+
 ## Update
 
 To update, run the self update : 
