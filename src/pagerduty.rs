@@ -168,12 +168,7 @@ impl PagerDuty {
         assignee = String::from("----------");
       }
       let created_at_str: String;
-      if all_incidents {
-        created_at_str = String::from(format!("{}\n{}", incident.created_at, assignee));
-      }
-      else {
-        created_at_str = incident.created_at;
-      }
+      created_at_str = String::from(format!("{}\n{}", incident.created_at, assignee));
 
       incident.service.summary = format!("{}", incident.service.summary);
       // Prepare the text to show
