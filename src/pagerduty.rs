@@ -28,6 +28,14 @@ struct PagerDutyService{
   summary: String,
 }
 #[derive(Debug, Deserialize)]
+struct PagerDutyAssignee{
+  summary: String,
+}
+#[derive(Debug, Deserialize)]
+struct PagerDutyAssignment{
+  assignee: PagerDutyAssignee,
+}
+#[derive(Debug, Deserialize)]
 struct PagerDutyPriority {
 }
 
@@ -44,6 +52,7 @@ struct PagerDutyIncident {
   status: String,
   service: PagerDutyService,
   priority: Option<PagerDutyPriority>,
+  assignments: Vec<PagerDutyAssignment>,
 }
 
 pub struct Incident {
@@ -103,13 +112,19 @@ impl PagerDuty {
     &self.domain
   }
 
-  pub async fn get_incidents(&self) -> Result<Vec<Incident>, String> {
+  pub async fn get_incidents(&self, all_incidents: bool) -> Result<Vec<Incident>, String> {
     let statuses: [&str; 2] = ["triggered","acknowledged"];
     let mut pd_incidents: Vec<PagerDutyIncident> = Vec::new();
 
     for status in statuses {
-      let url_requets:String = format!("{}{}?statuses[]={}&user_ids[]={}&limit=100",
-        PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status, &self.current_user_id);
+      let url_requets:String;
+      if all_incidents {
+        url_requets = format!("{}{}?statuses[]={}&limit=100",
+            PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status);
+      } else {
+        url_requets = format!("{}{}?statuses[]={}&user_ids[]={}&limit=100",
+            PAGERDUTY_URL,PAGERDUTY_INCIDENTS_ENDPOINT, status, &self.current_user_id);
+      }
       let client = Client::new();
       let response = client.get(&url_requets)
           .header(CONTENT_TYPE, "application/json")
@@ -143,6 +158,17 @@ impl PagerDuty {
       if incident.status == "triggered" {
         triggered = true;
       }
+      
+      // Assignee
+      let assignee: String;
+      if incident.assignments.len() > 0 {
+        assignee = incident.assignments.get(0).unwrap().assignee.summary.clone();
+      }
+      else {
+        assignee = String::from("----------");
+      }
+      let created_at_str: String;
+      created_at_str = String::from(format!("{}\n{}", incident.created_at, assignee));
 
       incident.service.summary = format!("{}", incident.service.summary);
       // Prepare the text to show
@@ -153,7 +179,7 @@ impl PagerDuty {
         summary: incident.summary,
         service: incident.service.summary,
         status: incident.status,
-        created_at: incident.created_at,
+        created_at: created_at_str,
         triggered: triggered,
       });
     }
@@ -216,13 +242,13 @@ pub async fn acknowledge_async(api_key: &str, id: &str) -> Result<(), ()> {
   Ok(())
 }
 
-pub async fn get_items_async(domain: &str, api_key: &str, tx: mpsc::UnboundedSender<Vec<Incident>>) -> Result<(), ()> {
+pub async fn get_items_async(domain: &str, api_key: &str, all_incidents: bool, tx: mpsc::UnboundedSender<Vec<Incident>>) -> Result<(), ()> {
   let pd_api_key = String::from(api_key);
   let pd_domain = String::from(domain);
 
   tokio::spawn(async move {
     let pd = PagerDuty::new(&pd_domain, &pd_api_key).await;
-    let items_res = pd.get_incidents().await;
+    let items_res = pd.get_incidents(all_incidents).await;
     match items_res {
       Ok(items) => {
         tx.send(items)

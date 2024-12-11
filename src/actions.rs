@@ -14,6 +14,7 @@ pub enum Action {
   Acknowledge,
   AcknowledgeAllService,
   HideAck,
+  AllIncidents,
   Quit,
   None,
 }
@@ -25,7 +26,7 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
   match msg {
     Action::UpdateIncidents => {
       app.refreshing = true;
-      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.items_tx.clone()).await;
+      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.all_incidents, app.items_tx.clone()).await;
     },
     Action::Increment => {
       app.next();
@@ -68,6 +69,15 @@ pub async fn update(app: &mut App, msg: Action) -> Action {
         app.hide_ack = true;
       }
     },
+    Action::AllIncidents => {
+      if app.all_incidents {
+        app.all_incidents = false;
+      } else {
+        app.all_incidents = true;
+      }
+      let _res = get_items_async(app.pager_duty.get_pagerduty_domain(),app.pager_duty.get_pagerduty_api_key(), app.all_incidents, app.items_tx.clone()).await;
+      app.refreshing = true;
+    },
     Action::Quit => app.should_quit = true, // You can handle cleanup and exit here
     _ => {},
   };
@@ -91,6 +101,7 @@ pub fn handle_event(_app: &App, tx: mpsc::UnboundedSender<Action>) -> tokio::tas
               crossterm::event::KeyCode::Char(' ') => Action::Acknowledge,
               crossterm::event::KeyCode::Char('a') | crossterm::event::KeyCode::Char('A') => Action::AcknowledgeAllService,
               crossterm::event::KeyCode::Char('h') => Action::HideAck,
+              crossterm::event::KeyCode::Char('g') => Action::AllIncidents,
               crossterm::event::KeyCode::Char('q') | crossterm::event::KeyCode::Esc => Action::Quit,
 
               _ => Action::None,
